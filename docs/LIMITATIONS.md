@@ -24,6 +24,20 @@ finer.
 - **No head "spotting", no arm dynamics in the topple.** Arm position enters only through the
   inertia tensor, not as a time-varying recovery action (that is Tier B/C).
 
+## Tier B (balance control)
+
+- **Single tilt degree of freedom.** The controlled body still has one tilt DOF. The hip
+  strategy's trunk lean is reported as a *cost readout* (`lean_per_torque * torque`), not a
+  second simulated link; a genuine two-link ankle+hip model is future work.
+- **Base-of-support values are representative.** `r_bos` for pointe/demi/flat (2/6/10 cm) are
+  plausible anterior-posterior half-extents, not a measured pressure map, and the AP base is
+  treated as symmetric (real feet are longer forward than back).
+- **Phase caveat on the Lin 2019 mapping.** Lin's expert-ankle / novice-hip finding is
+  specific to the landing phase, where the foot is grounded. The model's ankle-vs-hip
+  contrast is *consistent with* that observation but is not a claim about mid-pointe control.
+- **Controller, not muscle.** The restoring torque is an abstract joint torque with PD gains,
+  not a muscle model; mapping it to muscles/EMG is the Tier D synergy step.
+
 ## Data and validation
 
 - **Simulation generates its own data; there is no empirical fit here.** Validation is by
