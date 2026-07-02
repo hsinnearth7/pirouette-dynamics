@@ -1,21 +1,33 @@
 """pirouette-dynamics: physics-based simulation and learned control of ballet turns.
 
-See README.md for the layered design (physics core -> control -> learned control).
+Layers (see README):
+- anthropometry: De Leva segment masses + a parametric standing/retire posture.
+- inertia: assemble the whole-body inertia tensor about a pivot (parallel axis).
+- rigidbody: the toppling equation of motion (gravity-driven inverted spinning body).
+- topple: high-level analyses that reproduce Lott & Laws (2012) balance thresholds.
 """
 from __future__ import annotations
 
 from pirouette_dynamics.anthropometry import BodySegment, build_body, list_postures
 from pirouette_dynamics.inertia import RigidBodyInertia, assemble_inertia
 from pirouette_dynamics.rigidbody import ToppleResult, integrate_topple
+from pirouette_dynamics.topple import (
+    HOP_ONSET_ANGLE_DEG,
+    critical_initial_tilt_deg,
+    revolutions_to_topple,
+)
 
 __all__ = [
+    "HOP_ONSET_ANGLE_DEG",
     "BodySegment",
     "RigidBodyInertia",
     "ToppleResult",
     "assemble_inertia",
     "build_body",
+    "critical_initial_tilt_deg",
     "integrate_topple",
     "list_postures",
+    "revolutions_to_topple",
 ]
 
 __version__ = "0.1.0"
