@@ -7,6 +7,7 @@ Layers (see README):
 - topple: high-level analyses that reproduce Lott & Laws (2012) balance thresholds.
 - control: ankle vs hip balance strategies that close the loop on the toppling body.
 - metrics: the COM-COP inclination angle (Lin 2019), shared with the measurement tool.
+- reward: the shaped reward for the learned-control task (Tier C).
 """
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ from pirouette_dynamics.control import (
 )
 from pirouette_dynamics.inertia import RigidBodyInertia, assemble_inertia
 from pirouette_dynamics.metrics import com_cop_inclination_deg
+from pirouette_dynamics.reward import RewardWeights, step_reward
 from pirouette_dynamics.rigidbody import ToppleResult, integrate_topple
 from pirouette_dynamics.topple import (
     HOP_ONSET_ANGLE_DEG,
@@ -35,6 +37,7 @@ __all__ = [
     "BodySegment",
     "ControlledResult",
     "Controller",
+    "RewardWeights",
     "RigidBodyInertia",
     "ToppleResult",
     "ankle_controller",
@@ -50,6 +53,7 @@ __all__ = [
     "revolutions_to_topple",
     "revolutions_with_control",
     "stability_domain",
+    "step_reward",
 ]
 
 __version__ = "0.1.0"
