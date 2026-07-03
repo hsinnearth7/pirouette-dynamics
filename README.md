@@ -20,7 +20,7 @@ generates its own.
 |------|---------|-------|
 | **A. Physics core** | Whole-body inertia tensor (De Leva masses) + gravity-driven toppling ODE | **done** |
 | **B. Balance control** | bounded ankle vs hip strategies, COM-COP inclination metric, stability domains | **done** |
-| C. Learned control | `gymnasium` env + PPO that maximises revolutions with an aesthetic reward | planned |
+| **C. Learned control** | `gymnasium` env + CEM policy (PPO optional) with an aesthetic reward | **done** |
 | D. Bridges (optional) | joint-torque muscle synergies (NMF); qualitative video cross-check | planned |
 
 ## What Tier A reproduces
@@ -62,14 +62,45 @@ Ankle strategy: largest statically recoverable tilt vs base of support
   Lin et al. (2019). The shared `metrics.com_cop_inclination_deg` is defined exactly as Lin's
   Eq. 2/3, so simulated turns are comparable with that paper's published numbers.
 
+## What Tier C shows
+
+`python examples/03_learn_pirouette.py` trains a linear policy with the Cross-Entropy Method
+(no GPU, no extra dependency) to balance and keep turning, then ablates the reward. Averaged
+over 8 held-out reset seeds (deterministic, seed 0):
+
+```
+  passive (no control)         return -36.6 | revs 1.6 | AP incl 8.4 deg | ML incl 3.4 deg | TOPPLED
+  learned, AP-weighted reward  return +17.4 | revs 5.0 | AP incl 2.0 deg | ML incl 0.5 deg | survived
+  learned, symmetric (ablate)  return +17.3 | revs 5.0 | AP incl 3.6 deg | ML incl 3.0 deg | survived
+```
+
+Three things emerge, none of them hand-coded:
+
+- **Active balance.** The learned policy stops toppling and completes all five turns, echoing
+  Lott & Laws's point that dancers recover *during* the turn rather than holding a perfect
+  start.
+- **Expert-level, AP-dominant inclination.** With the AP-weighted aesthetic reward the policy
+  holds AP inclination at **2.0 deg** (near Lin's experienced-dancer 2.77 deg) and ML near
+  zero, i.e. the AP-dominant signature Lin reports.
+- **Reward shapes skill.** Removing the AP emphasis (symmetric reward) raises AP inclination
+  to 3.6 deg, toward Lin's novice range (5.62 deg). The aesthetic weighting alone moves the
+  agent along the novice-to-expert axis.
+
+This is *consistent with*, not proof of, expert biomechanics (see `docs/LIMITATIONS.md`). PPO
+(stable-baselines3) is available as `pirouette_dynamics.ppo.train_ppo` with the `rl` extra and
+reaches similar low AP inclination; CEM is the default because it is dependency-free and
+reproducible.
+
 ## Install
 
 ```bash
-pip install -e ".[viz,dev]"
-pytest            # physics conservation + threshold reproduction
+pip install -e ".[viz,dev]"      # core + plots + test tooling
+pip install -e ".[rl]"           # optional: PPO via stable-baselines3
+pytest                           # physics conservation, thresholds, control, learning
 ```
 
-Requires Python >= 3.11, numpy, scipy (matplotlib for plots; torch/gymnasium for Tier C).
+Requires Python >= 3.11, numpy, scipy (matplotlib for plots; gymnasium for the RL env;
+stable-baselines3 only for the optional PPO path).
 
 ## Layout
 
@@ -79,7 +110,13 @@ src/pirouette_dynamics/
   inertia.py        # whole-body inertia tensor about the supporting foot (parallel axis)
   rigidbody.py      # toppling equation of motion + a torque-free Euler integrator
   topple.py         # revolutions-to-topple, critical start angle, Lott & Laws report
-examples/01_reproduce_lott_laws.py
+  control.py        # bounded ankle vs hip balance strategies, stability domains
+  metrics.py        # COM-COP inclination angle (Lin 2019), shared with the analyzer
+  env.py            # Gymnasium PirouetteEnv (balance + spin + aesthetic reward)
+  reward.py         # shaped reward: turning, AP>ML inclination, elegance, economy
+  train.py          # dependency-free CEM policy search + rollout/evaluate
+  ppo.py            # optional PPO adapter (stable-baselines3)
+examples/           # 01 reproduce Lott & Laws, 02 control strategies, 03 learn to turn
 tests/              # pytest
 docs/               # PHYSICS.md, METHOD.md, LIMITATIONS.md
 ```

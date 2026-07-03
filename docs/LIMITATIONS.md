@@ -38,6 +38,22 @@ finer.
 - **Controller, not muscle.** The restoring torque is an abstract joint torque with PD gains,
   not a muscle model; mapping it to muscles/EMG is the Tier D synergy step.
 
+## Tier C (learned control)
+
+- **Reduced 2-axis model.** The learned agent controls two tilt axes plus spin and arm
+  retraction; it is not a full articulated body. The AP-vs-ML asymmetry is imposed partly
+  through the disturbance (AP is perturbed more than ML) and partly through the reward weight,
+  matching Lin's observation rather than deriving it from first principles.
+- **"Emergence" is consistency, not proof.** That the AP-weighted policy lands near Lin's
+  experienced-dancer inclination is evidence the reward and physics are set up sensibly, not a
+  demonstration that real dancers optimise this reward. Claims in `examples/03` are phrased as
+  "consistent with".
+- **Single seed reported.** The example is deterministic at seed 0; CEM outcomes vary with
+  seed and budget. The headline numbers are one reproducible run, not a mean over seeds with
+  confidence intervals.
+- **Simulated data only.** As in Tiers A-B, there is no empirical fit; validation is against
+  Lin's *published* group statistics, which needs no motion capture.
+
 ## Data and validation
 
 - **Simulation generates its own data; there is no empirical fit here.** Validation is by
