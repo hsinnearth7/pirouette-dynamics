@@ -22,3 +22,7 @@ htmlcov/
 *.mp4
 figures/*.png
 data/
+results/
+
+# assistant/editor local state
+.claude/
