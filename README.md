@@ -116,7 +116,8 @@ src/pirouette_dynamics/
   reward.py         # shaped reward: turning, AP>ML inclination, elegance, economy
   train.py          # dependency-free CEM policy search + rollout/evaluate
   ppo.py            # optional PPO adapter (stable-baselines3)
-examples/           # 01 reproduce Lott & Laws, 02 control strategies, 03 learn to turn
+examples/           # 01 reproduce Lott & Laws, 02 control strategies, 03 learn to turn,
+                    # 04 reward sensitivity sweep (pre-registered, docs/PREREGISTRATION + SWEEP_RESULTS)
 tests/              # pytest
 docs/               # PHYSICS.md, METHOD.md, LIMITATIONS.md
 ```
