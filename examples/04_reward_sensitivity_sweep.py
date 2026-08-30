@@ -2,13 +2,15 @@
 
 Pre-registered in docs/PREREGISTRATION_idea1_2026-07-04.md. Modes:
   smoke : 3 weights x 1 seed, fast sanity.
-  cem   : full grid x 8 CEM seeds (the confirmatory run) + held-out ankle/hip usage + prereg verdicts.
+  cem   : full grid x 8 CEM seeds (the confirmatory run) + held-out ankle/hip usage
+          + prereg verdicts.
   ppo   : PPO learner cross-check at aesthetic_ap in {0.3, 1.0}, 3 seeds (needs the `rl` extra).
 
 Held-out (NOT in the reward) emergence signals reported: (H-a) the AP-inclination floor VALUE vs the
 human expert 2.77 deg (reward drives it toward 0, so a floor at ~2.77 is emergent, not a target);
 (H-b) the ankle-vs-hip torque-usage ratio (reward penalises hip lean but never the ankle/hip split);
-(H-c) robustness across a broad weight band. Run: python examples/04_reward_sensitivity_sweep.py [mode]
+(H-c) robustness across a broad weight band.
+Run: python examples/04_reward_sensitivity_sweep.py [mode]
 """
 from __future__ import annotations
 
@@ -21,7 +23,7 @@ from scipy import stats
 
 from pirouette_dynamics.env import PirouetteEnv
 from pirouette_dynamics.reward import RewardWeights
-from pirouette_dynamics.train import cem_train, evaluate, rollout
+from pirouette_dynamics.train import cem_train, evaluate
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _RESULTS = os.path.join(_HERE, "..", "results")
@@ -34,7 +36,8 @@ AP_GRID = [0.3, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0]
 
 
 def ankle_hip_usage(env: PirouetteEnv, policy, seeds: list[int]) -> float:
-    """Mean |ankle_ap action| / mean |hip_ap action| over rollouts (held-out ankle-dominance signal)."""
+    """Mean |ankle_ap action| / mean |hip_ap action| over rollouts
+    (held-out ankle-dominance signal)."""
     ank, hip = [], []
     for s in seeds:
         obs, _ = env.reset(seed=s)
@@ -85,8 +88,9 @@ def run_cem(seeds: list[int], iters: int, pop: int) -> list[dict]:
                      "revs_mean": float(np.mean([p[0].revolutions for p in pts])),
                      "ankle_hip_ratio_mean": ratio_m, "ankle_hip_ratio_ci95": ratio_h,
                      "n_survived": surv, "n_seeds": len(seeds)})
-        print(f"{ap_w:7.2f} | {ap_m:8.2f} +- {ap_h:5.2f} deg | {rows[-1]['ml_incl_mean']:6.2f} | "
-              f"{rows[-1]['revs_mean']:5.2f} | {ratio_m:5.2f}+-{ratio_h:4.2f} | {surv}/{len(seeds)}")
+        print(f"{ap_w:7.2f} | {ap_m:8.2f} +- {ap_h:5.2f} deg | "
+              f"{rows[-1]['ml_incl_mean']:6.2f} | {rows[-1]['revs_mean']:5.2f} | "
+              f"{ratio_m:5.2f}+-{ratio_h:4.2f} | {surv}/{len(seeds)}")
     return rows
 
 
@@ -97,15 +101,17 @@ def prereg_verdict(rows: list[dict]) -> None:
         lo, hi = min(r["aesthetic_ap"] for r in band), max(r["aesthetic_ap"] for r in band)
         span = hi / lo if lo > 0 else float("inf")
         h2 = span >= 3.0
+        verdict = "CONFIRMED" if h2 else "NOT confirmed (span<3x)"
         print(f"H2 robustness: expert-side (AP<= {MIDPOINT:.2f}, surv>=6/8) band = "
-              f"[{lo}, {hi}] (span {span:.1f}x) -> {'CONFIRMED' if h2 else 'NOT confirmed (span<3x)'}")
+              f"[{lo}, {hi}] (span {span:.1f}x) -> {verdict}")
         ratios = [(r['ankle_hip_ratio_mean'], r['ankle_hip_ratio_ci95']) for r in band
                   if np.isfinite(r['ankle_hip_ratio_mean'])]
         if ratios:
             worst_lo = min(m - h for m, h in ratios)
             print(f"H1c ankle-dominance: min(ratio-CI) in band = {worst_lo:.2f} -> "
                   f"{'CONFIRMED (>1)' if worst_lo > 1.0 else 'NOT confirmed'}")
-        hi_arm = [r["ap_incl_mean"] for r in rows if r["aesthetic_ap"] >= 1.0 and r["n_survived"] >= 6]
+        hi_arm = [r["ap_incl_mean"] for r in rows
+                  if r["aesthetic_ap"] >= 1.0 and r["n_survived"] >= 6]
         floor_ok = bool(hi_arm) and min(hi_arm) > 1.0
         print(f"Non-baked-in floor: min AP over surviving aes_ap>=1.0 = "
               f"{min(hi_arm) if hi_arm else float('nan'):.2f} -> "
@@ -116,12 +122,15 @@ def prereg_verdict(rows: list[dict]) -> None:
 
 def run_ppo(iters_note: str = "") -> None:
     from pirouette_dynamics.ppo import train_ppo
-    print("PPO cross-check (learner-robustness): aesthetic_ap in {0.3, 1.0}, 3 seeds, 100k steps each")
+    print("PPO cross-check (learner-robustness): aesthetic_ap in {0.3, 1.0}, "
+          "3 seeds, 100k steps each")
     for ap_w in (0.3, 1.0):
         w = RewardWeights(aesthetic_ap=ap_w, aesthetic_ml=ML_FIXED)
         aps = []
         for seed in (0, 1, 2):
-            pol = train_ppo(lambda: PirouetteEnv(weights=w), total_timesteps=100_000, seed=seed)
+            pol = train_ppo(
+                lambda w=w: PirouetteEnv(weights=w), total_timesteps=100_000, seed=seed
+            )
             st = evaluate(PirouetteEnv(weights=w), pol, EVAL_SEEDS)
             aps.append(st.peak_inclination_ap_deg)
         m, h = _ci(aps)
@@ -147,12 +156,16 @@ def _save(rows: list[dict], tag: str) -> None:
         fig, ax = plt.subplots(figsize=(7, 4.5))
         ax.errorbar(aps, [r["ap_incl_mean"] for r in rows], yerr=[r["ap_incl_ci95"] for r in rows],
                     marker="o", capsize=3, label="emergent AP inclination (mean, 95% CI)")
-        ax.plot(aps, [r["ml_incl_mean"] for r in rows], marker="s", linestyle="--", label="emergent ML")
-        ax.axhline(LIN_EXPERIENCED_AP, color="green", linestyle=":", label=f"Lin experienced {LIN_EXPERIENCED_AP}")
+        ax.plot(aps, [r["ml_incl_mean"] for r in rows],
+                marker="s", linestyle="--", label="emergent ML")
+        ax.axhline(LIN_EXPERIENCED_AP, color="green", linestyle=":",
+                   label=f"Lin experienced {LIN_EXPERIENCED_AP}")
         ax.axhline(LIN_NOVICE_AP, color="red", linestyle=":", label=f"Lin novice {LIN_NOVICE_AP}")
         ax.set_xlabel("reward AP-inclination weight (aesthetic_ap; aesthetic_ml fixed 0.3)")
         ax.set_ylabel("emergent COM-COP inclination (deg)")
-        ax.set_title(f"Confirmatory sweep ({rows[0]['n_seeds']} seeds): expert-like AP-dominant robustness")
+        ax.set_title(
+            f"Confirmatory sweep ({rows[0]['n_seeds']} seeds): "
+            "expert-like AP-dominant robustness")
         ax.legend(fontsize=8)
         fig.tight_layout()
         png = os.path.join(_RESULTS, f"reward_sweep_{tag}.png")
