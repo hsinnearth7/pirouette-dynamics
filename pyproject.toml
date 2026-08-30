@@ -14,11 +14,12 @@ keywords = ["biomechanics", "ballet", "pirouette", "rigid-body-dynamics", "reinf
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
+    "gymnasium>=0.29",
 ]
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.8"]
-rl = ["gymnasium>=0.29", "torch>=2.0", "stable-baselines3>=2.0"]
+rl = ["torch>=2.0", "stable-baselines3>=2.0"]
 dev = ["pytest>=8", "pytest-cov>=4", "ruff>=0.5", "mypy>=1.8"]
 
 [tool.setuptools.packages.find]
@@ -36,10 +37,10 @@ src = ["src", "tests"]
 select = ["E", "F", "I", "UP", "B", "SIM", "NPY"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"  # mypy analysis target: modern numpy stubs use PEP 695 `type` (3.12+); runtime still supports 3.11 (see requires-python + CI matrix)
 strict = true
 files = ["src"]
 
 [[tool.mypy.overrides]]
-module = ["scipy.*"]
+module = ["scipy.*", "stable_baselines3.*", "torch.*"]
 ignore_missing_imports = true
