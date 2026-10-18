@@ -94,9 +94,33 @@ def run_cem(seeds: list[int], iters: int, pop: int) -> list[dict]:
     return rows
 
 
+def _passes_band(r: dict) -> bool:
+    return r["ap_incl_mean"] <= MIDPOINT and r["n_survived"] >= 6
+
+
+def _span(run: list[dict]) -> float:
+    lo, hi = run[0]["aesthetic_ap"], run[-1]["aesthetic_ap"]
+    return hi / lo if lo > 0 else float("inf")
+
+
+def widest_contiguous_band(rows: list[dict]) -> list[dict]:
+    """Pre-registration section 4 requires a CONTIGUOUS weight band: consecutive swept weights that
+    all pass. Return the passing run with the largest hi/lo span ([] if none pass)."""
+    best: list[dict] = []
+    run: list[dict] = []
+    for r in sorted(rows, key=lambda r: r["aesthetic_ap"]) + [None]:
+        if r is not None and _passes_band(r):
+            run.append(r)
+            continue
+        if run and (not best or _span(run) > _span(best)):
+            best = run
+        run = []
+    return best
+
+
 def prereg_verdict(rows: list[dict]) -> None:
     print("\n--- prereg decision rules (docs/PREREGISTRATION_idea1_2026-07-04.md) ---")
-    band = [r for r in rows if r["ap_incl_mean"] <= MIDPOINT and r["n_survived"] >= 6]
+    band = widest_contiguous_band(rows)
     if band:
         lo, hi = min(r["aesthetic_ap"] for r in band), max(r["aesthetic_ap"] for r in band)
         span = hi / lo if lo > 0 else float("inf")
