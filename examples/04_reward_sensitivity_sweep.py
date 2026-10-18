@@ -35,9 +35,8 @@ MIDPOINT = (LIN_EXPERIENCED_AP + LIN_NOVICE_AP) / 2.0  # 4.195 deg: expert-side 
 AP_GRID = [0.3, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0]
 
 
-def ankle_hip_usage(env: PirouetteEnv, policy, seeds: list[int]) -> float:
-    """Mean |ankle_ap action| / mean |hip_ap action| over rollouts
-    (held-out ankle-dominance signal)."""
+def _mean_abs_commands(env: PirouetteEnv, policy, seeds: list[int]) -> tuple[float, float]:
+    """(mean |a[0]|, mean |a[3]|) of the clipped normalised commands over rollouts."""
     ank, hip = [], []
     for s in seeds:
         obs, _ = env.reset(seed=s)
@@ -48,8 +47,56 @@ def ankle_hip_usage(env: PirouetteEnv, policy, seeds: list[int]) -> float:
             obs, _r, term, trunc, _info = env.step(a)
             if term or trunc:
                 break
-    ma, mh = float(np.mean(ank)), float(np.mean(hip))
+    return float(np.mean(ank)), float(np.mean(hip))
+
+
+def ankle_hip_command_ratio(env: PirouetteEnv, policy, seeds: list[int]) -> float:
+    """Ankle-to-hip COMMAND UTILISATION ratio: mean|a[0]| / mean|a[3]| on clipped, normalised
+    commands. NOT a torque ratio: the env scales ankle by tau_bos and hip by tau_hip, so the hip
+    channel has `capacity_factor(env)` (~5.4) times more torque per unit command."""
+    ma, mh = _mean_abs_commands(env, policy, seeds)
     return ma / mh if mh > 1e-6 else float("inf")
+
+
+# Backward-compatible name (pre-2026-10-15 callers): returns the command-utilisation ratio.
+ankle_hip_usage = ankle_hip_command_ratio
+
+
+def capacity_factor(env: PirouetteEnv) -> float:
+    """Hip-to-ankle torque capacity per unit command, tau_hip / tau_bos, read from the env."""
+    return float(env.tau_hip) / float(env.tau_bos)
+
+
+def command_to_torque_ratio(command_ratio: float, factor: float) -> float:
+    """Convert an ankle/hip command-utilisation ratio to torque units: ratio / (tau_hip/tau_bos)."""
+    return command_ratio / factor
+
+
+def ankle_hip_torque_ratio(env: PirouetteEnv, policy, seeds: list[int]) -> float:
+    """Ankle-to-hip ratio in torque units: mean|a[0] * tau_bos| / mean|a[3] * tau_hip|."""
+    ma, mh = _mean_abs_commands(env, policy, seeds)
+    den = mh * float(env.tau_hip)
+    return ma * float(env.tau_bos) / den if den > 1e-9 else float("inf")
+
+
+def write_torque_sidecar(src_csv: str, dst_csv: str, factor: float) -> list[dict]:
+    """Convert the saved command-ratio columns to torque units (constant factor per env, so mean and
+    CI half-width both scale by 1/factor). The source CSV is left untouched."""
+    with open(src_csv, newline="", encoding="utf-8") as fh:
+        rows = list(csv.DictReader(fh))
+    out = []
+    for r in rows:
+        m, h = float(r["ankle_hip_ratio_mean"]), float(r["ankle_hip_ratio_ci95"])
+        out.append({"aesthetic_ap": r["aesthetic_ap"],
+                    "command_ratio_mean": m, "command_ratio_ci95": h,
+                    "torque_ratio_mean": command_to_torque_ratio(m, factor),
+                    "torque_ratio_ci95": command_to_torque_ratio(h, factor),
+                    "capacity_factor": factor, "n_survived": r["n_survived"]})
+    with open(dst_csv, "w", newline="", encoding="utf-8") as fh:
+        wtr = csv.DictWriter(fh, fieldnames=list(out[0].keys()))
+        wtr.writeheader()
+        wtr.writerows(out)
+    return out
 
 
 def _ci(xs: list[float]) -> tuple[float, float]:
@@ -66,7 +113,7 @@ def train_point_cem(ap_w: float, seed: int, iters: int, pop: int):
     w = RewardWeights(aesthetic_ap=ap_w, aesthetic_ml=ML_FIXED)
     res = cem_train(lambda: PirouetteEnv(weights=w), iterations=iters, population=pop, seed=seed)
     st = evaluate(PirouetteEnv(weights=w), res.policy, EVAL_SEEDS)
-    ratio = ankle_hip_usage(PirouetteEnv(weights=w), res.policy, EVAL_SEEDS)
+    ratio = ankle_hip_command_ratio(PirouetteEnv(weights=w), res.policy, EVAL_SEEDS)
     return st, ratio
 
 
@@ -132,7 +179,8 @@ def prereg_verdict(rows: list[dict]) -> None:
                   if np.isfinite(r['ankle_hip_ratio_mean'])]
         if ratios:
             worst_lo = min(m - h for m, h in ratios)
-            print(f"H1c ankle-dominance: min(ratio-CI) in band = {worst_lo:.2f} -> "
+            print(f"H1c ankle-dominance (command ratio, not torque): min(ratio-CI) in band = "
+                  f"{worst_lo:.2f} -> "
                   f"{'CONFIRMED (>1)' if worst_lo > 1.0 else 'NOT confirmed'}")
         hi_arm = [r["ap_incl_mean"] for r in rows
                   if r["aesthetic_ap"] >= 1.0 and r["n_survived"] >= 6]
@@ -206,6 +254,14 @@ def main() -> None:
         AP_GRID = [0.3, 1.0, 3.0]
         rows = run_cem([0], 12, 32)
         _save(rows, "smoke")
+    elif mode == "torque":
+        factor = capacity_factor(PirouetteEnv())
+        out = write_torque_sidecar(os.path.join(_RESULTS, "reward_sweep_confirmatory.csv"),
+                                   os.path.join(_RESULTS, "reward_sweep_confirmatory_torque.csv"),
+                                   factor)
+        for r in out:
+            print(f"{float(r['aesthetic_ap']):5.2f}  cmd {r['command_ratio_mean']:.2f}  "
+                  f"torque {r['torque_ratio_mean']:.3f} +- {r['torque_ratio_ci95']:.3f}")
     elif mode == "ppo":
         run_ppo()
     else:
