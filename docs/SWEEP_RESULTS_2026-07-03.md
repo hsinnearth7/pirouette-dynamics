@@ -1,11 +1,21 @@
 # Reward-weight sensitivity sweep — exploratory pilot (2026-07-03)
 
+> **Superseded; historical record only (note added 2026-10-15).** The confirmatory 8-seed run and
+> its corrections are in `SWEEP_RESULTS_CONFIRMATORY_2026-07-04.md` and PREREGISTRATION section 7.
+> Several readings below do not survive them: the "robust attractor" band is [0.6, 3.0] on reset
+> seeds 0-7 and collapses on held-out resets (post-hoc, `examples/05`); ML inclination exceeds AP
+> at most weights, so the strategy is AP-penalised rather than AP-dominant; and the floor is
+> numerically comparable to Lin's preparatory-phase range, not "equal to the expert value".
+> The 3-seed pilot script was not preserved: the first committed `examples/04` is already the
+> 8-seed confirmatory version, so `results/reward_sensitivity_sweep.csv` cannot be regenerated
+> from tracked code and the numbers below are a historical record.
+
 > Script: `examples/04_reward_sensitivity_sweep.py`. 9 reward weights x 3 CEM
 > training seeds x 25 iterations; `aesthetic_ap=1.0, seed 0` reproduces examples/03's expert config.
 > **Question**: is the expert-like, AP-dominant balance strategy a robust attractor across the reward
 > AP-weight, or does it appear only at one tuned value?
 
-## Result (mean +- sd over 3 training seeds; evaluated on 8 held-out reset seeds)
+## Result (mean +- sd over 3 training seeds; evaluated on reset seeds 0-7, of which 0-4 also enter the CEM fitness, so not held out; corrected 2026-10-15)
 
 | aesthetic_ap | AP:ML ratio | AP incl (deg) | ML incl (deg) | revs | survived |
 |---|---|---|---|---|---|
