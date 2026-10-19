@@ -5,9 +5,9 @@ produces it:
 
 - **keep turning**: reward accrued per revolution while upright;
 - **aesthetic (AP > ML)**: penalise the COM-COP inclination, weighting the anterior-posterior
-  axis more than medio-lateral. Lin et al. (2019) found the expert-novice difference is large
-  in AP (Cohen's d 0.87-1.18) and small in ML (0.43-0.65); the asymmetric weight makes the
-  agent suppress AP inclination the way expert dancers do;
+  axis more than medio-lateral. Lin et al. (2019) found the expert-novice difference is larger
+  in AP (Cohen's d 0.50-1.18 over the significant phases) than in ML (0.43-0.65); the
+  asymmetric weight makes the agent suppress AP inclination more than ML;
 - **elegance**: penalise the trunk lean that the hip strategy incurs;
 - **economy**: a small penalty on control effort (coordination economy);
 - **toppling**: a large terminal penalty when the body passes the hop-onset angle.

@@ -4,8 +4,8 @@ Run: python examples/02_control_strategies.py
 
 Shows (1) how the ankle strategy's recoverable tilt is set by the base of support -- about a
 degree on pointe, a few degrees on a flat foot -- and (2) how the hip strategy recovers larger
-tilts at the cost of a visible trunk lean, mirroring the expert-ankle / novice-hip contrast in
-Lin et al. (2019).
+tilts at the cost of a visible trunk lean. Lin et al. (2019) only suggested a hip strategy for
+novices in the ending phase, without measuring it, so this is a modelling contrast.
 """
 from __future__ import annotations
 

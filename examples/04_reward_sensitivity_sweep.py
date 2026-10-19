@@ -1,14 +1,23 @@
-"""Confirmatory reward-weight sweep + held-out emergence checks.
+"""Confirmatory reward-weight sweep + emergence checks.
 
-Pre-registered in docs/PREREGISTRATION_idea1_2026-07-04.md. Modes:
+Analysis plan drafted before the run in docs/PREREGISTRATION_idea1_2026-07-04.md
+(committed with the results, not externally registered). Modes:
   smoke : 3 weights x 1 seed, fast sanity.
-  cem   : full grid x 8 CEM seeds (the confirmatory run) + held-out ankle/hip usage
+  cem   : full grid x 8 CEM seeds (the confirmatory run) + ankle/hip usage
           + prereg verdicts.
+  torque: write results/reward_sweep_confirmatory_torque.csv (torque-unit ratios; no retraining).
   ppo   : PPO learner cross-check at aesthetic_ap in {0.3, 1.0}, 3 seeds (needs the `rl` extra).
 
-Held-out (NOT in the reward) emergence signals reported: (H-a) the AP-inclination floor VALUE vs the
-human expert 2.77 deg (reward drives it toward 0, so a floor at ~2.77 is emergent, not a target);
-(H-b) the ankle-vs-hip torque-usage ratio (reward penalises hip lean but never the ankle/hip split);
+Evaluation uses reset seeds 0-7 (EVAL_SEEDS); the CEM fitness averages over reset seeds 0-4
+(cem_train default), so only seeds 5-7 are unseen in training: not a held-out evaluation.
+
+Emergence signals reported (labelled "held-out" in the plan; see PREREGISTRATION section 7):
+(H-a) the AP-inclination floor VALUE vs the human expert 2.77 deg (reward drives it toward 0,
+so a floor at ~2.77 is emergent, not a target);
+(H-b) the ankle-vs-hip usage ratio, reported as normalised-command utilisation (CSV column
+ankle_hip_ratio_*) and converted to torque units by 1/(tau_hip/tau_bos) (partly targeted: the
+penalised inclination uses a COP that only the ankle shifts, and the lean term penalises hip
+command);
 (H-c) robustness across a broad weight band.
 Run: python examples/04_reward_sensitivity_sweep.py [mode]
 """

@@ -5,8 +5,9 @@ Run: python examples/03_learn_pirouette.py   (~1 minute; CEM, no GPU, no extra d
 Trains a linear policy with the Cross-Entropy Method and compares it to a passive baseline,
 then runs an ablation that removes the anterior-posterior emphasis from the aesthetic reward.
 The learned policy should (1) actively balance instead of toppling, and (2) hold a small AP
-COM-COP inclination close to Lin et al. (2019)'s experienced-dancer value, while the ablated
-(symmetric-reward) policy drifts toward the larger, novice-like inclination.
+COM-COP inclination. The values are printed next to Lin et al. (2019)'s preparatory-phase
+ranges for reference only; this single-seed run does not establish an expert/novice contrast
+(see docs/LIMITATIONS.md and the 8-seed sweep in examples/04).
 """
 from __future__ import annotations
 
@@ -46,7 +47,8 @@ def main() -> None:
         seed=0,
     )
 
-    print("\nEmergence comparison (mean over 8 held-out reset seeds):")
+    print("\nEmergence comparison (mean over evaluation reset seeds 0-7; "
+          "CEM fitness used seeds 0-4, so only 5-7 are unseen):")
     print(_row("passive (no control)", evaluate(env, passive, EVAL_SEEDS)))
     print(_row("learned, AP-weighted", evaluate(env, expert.policy, EVAL_SEEDS)))
     print(_row("learned, symmetric (ablate)", evaluate(PirouetteEnv(weights=sym_weights),
@@ -54,9 +56,9 @@ def main() -> None:
 
     print("\nLin et al. (2019) PRE-phase AP inclination range: experienced 2.77 deg, "
           "novice 5.62 deg.")
-    print("The AP-weighted policy actively balances and lands near the experienced value;")
-    print("removing the AP emphasis pushes it toward the larger, novice-like inclination.")
-    print("(Consistent with, not proof of, expert biomechanics -- see docs/LIMITATIONS.md.)")
+    print("Lin's values are preparatory-phase ranges, not single-leg peaks: reference only.")
+    print("Single seed: the 8-seed sweep (examples/04) is the evidence, and its symmetric-")
+    print("reward equivalent is inconclusive about a novice-ward shift (docs/LIMITATIONS.md).")
 
 
 if __name__ == "__main__":
