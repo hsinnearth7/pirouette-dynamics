@@ -1,0 +1,17 @@
+# DOI: none yet. A Zenodo DOI (and a `doi:` field) will be added when a release is tagged.
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "pirouette-dynamics: a physics-based simulator and learned controller for ballet pirouette turn stability"
+authors:
+  - family-names: Chang
+    given-names: Yu-Hsin
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/hsinnearth7/pirouette-dynamics"
+url: "https://github.com/hsinnearth7/pirouette-dynamics"
+keywords:
+  - biomechanics
+  - ballet
+  - pirouette
+  - rigid-body-dynamics
+  - reinforcement-learning
