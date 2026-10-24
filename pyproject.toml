@@ -9,7 +9,7 @@ description = "A physics-based simulator and learned controller for ballet pirou
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-authors = [{ name = "[YOUR NAME]" }]
+authors = [{ name = "Yu-Hsin Chang" }]
 keywords = ["biomechanics", "ballet", "pirouette", "rigid-body-dynamics", "reinforcement-learning"]
 dependencies = [
     "numpy>=1.26",
