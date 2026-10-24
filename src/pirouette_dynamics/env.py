@@ -80,10 +80,10 @@ class PirouetteEnv(gym.Env[Obs, Action]):
         self.lean_per_torque = math.radians(_HIP_LEAN_AT_CAPACITY_DEG) / self.tau_hip
         self.angular_momentum = self.i_zz_max * _BASELINE_SPIN_REV_S * 2.0 * math.pi
 
-        high = np.array([3.0, 3.0, 3.0, 3.0, 3.0, 1.0, 1.0], dtype=np.float32)
-        low = np.array([-3.0, -3.0, -3.0, -3.0, 0.0, 0.0, 0.0], dtype=np.float32)
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
+        high = np.array([3.0, 3.0, 3.0, 3.0, 3.0, 1.0, 1.0], dtype=np.float64)
+        low = np.array([-3.0, -3.0, -3.0, -3.0, 0.0, 0.0, 0.0], dtype=np.float64)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float64)
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float64)
 
         self._theta_ap = 0.0
         self._omega_ap = 0.0

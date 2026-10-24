@@ -41,7 +41,8 @@ def test_step_contract() -> None:
     env = PirouetteEnv()
     env.reset(seed=0)
     obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
-    assert env.observation_space.contains(obs.astype(np.float32))
+    assert obs.dtype == env.observation_space.dtype
+    assert env.observation_space.contains(obs)
     assert isinstance(reward, float)
     assert isinstance(terminated, bool)
     assert isinstance(truncated, bool)
