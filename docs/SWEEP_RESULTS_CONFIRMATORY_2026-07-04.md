@@ -1,5 +1,7 @@
 # Confirmatory sweep result (8 seeds, planned analysis) — 2026-07-04
 
+> **Correction note (2026-11-17):** The heading "H1c CONFIRMED (held-out)" in the verdicts section below uses "held-out" in the sense of PREREGISTRATION section 3 ("target vs held-out quantities"): the ankle/hip split was not a reward target, so the ratio counts as emergent. It does not mean evaluation on unseen reset seeds. The evaluations here use reset seeds 0-7, of which 0-4 also enter the CEM training fitness (see the header above and PREREGISTRATION section 7, "evaluation resets not held out"). Truly held-out resets are the post-hoc seeds 100-107 in the section "Post-hoc held-out re-evaluation" below, where H2 is not confirmed. PREREGISTRATION section 7 also records that the ankle/hip split is not untargeted ("H-b is not untargeted"), and that H1c concerns command utilisation, not torque. Do not quote "H1c CONFIRMED (held-out)" as a held-out-resets result.
+
 > Pre-registration: `docs/PREREGISTRATION_idea1_2026-07-04.md`. This 8-seed CEM run is the
 > CONFIRMATORY analysis; it supersedes the 2026-07-03 3-seed pilot (`SWEEP_RESULTS_2026-07-03.md`)
 > for confirmatory claims. Script: `examples/04_reward_sensitivity_sweep.py` (mode `cem`).
