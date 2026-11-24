@@ -236,17 +236,17 @@ def _save(rows: list[dict], tag: str) -> None:
         aps = [r["aesthetic_ap"] for r in rows]
         fig, ax = plt.subplots(figsize=(7, 4.5))
         ax.errorbar(aps, [r["ap_incl_mean"] for r in rows], yerr=[r["ap_incl_ci95"] for r in rows],
-                    marker="o", capsize=3, label="emergent AP inclination (mean, 95% CI)")
+                    marker="o", capsize=3, label="AP inclination (mean, 95% CI)")
         ax.plot(aps, [r["ml_incl_mean"] for r in rows],
-                marker="s", linestyle="--", label="emergent ML")
+                marker="s", linestyle="--", label="ML inclination (mean)")
         ax.axhline(LIN_EXPERIENCED_AP, color="green", linestyle=":",
                    label=f"Lin experienced {LIN_EXPERIENCED_AP}")
         ax.axhline(LIN_NOVICE_AP, color="red", linestyle=":", label=f"Lin novice {LIN_NOVICE_AP}")
         ax.set_xlabel("reward AP-inclination weight (aesthetic_ap; aesthetic_ml fixed 0.3)")
-        ax.set_ylabel("emergent COM-COP inclination (deg)")
+        ax.set_ylabel("peak COM-COP inclination (deg)")
         ax.set_title(
-            f"Confirmatory sweep ({rows[0]['n_seeds']} seeds): "
-            "expert-like AP-dominant robustness")
+            f"Reward-weight sweep ({rows[0]['n_seeds']} seeds), "
+            "evaluation reset seeds 0-7 (not held-out)")
         ax.legend(fontsize=8)
         fig.tight_layout()
         png = os.path.join(_RESULTS, f"reward_sweep_{tag}.png")

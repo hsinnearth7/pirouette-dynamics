@@ -6,11 +6,12 @@ Tier A showed the passive body topples. Tier B closes the loop with a restoring 
 
 Two strategies differ in where the torque comes from and what bounds it:
 
-- **Ankle strategy** (expert-like, elegant): torque about the ankle, but the centre of
+- **Ankle strategy**: torque about the ankle, but the centre of
   pressure can only move within the base of support, so ``|u| <= M g r_bos``. The largest tilt
   it can hold statically is ``arcsin(r_bos / l)`` -- about 1 deg on pointe, a few degrees on a
   flat foot. This is the mechanical reason a pirouette is so unstable.
-- **Hip strategy** (novice-like at landing, per Lin 2019): the trunk is thrown at the hip,
+- **Hip strategy** (Lin 2019 suggested, but did not measure, a hip strategy in novices'
+  ending phase): the trunk is thrown at the hip,
   giving more corrective authority than the tiny pointe base allows, but at the cost of a
   visible trunk lean (tracked as a side-effect), i.e. a larger COM-COP excursion.
 
